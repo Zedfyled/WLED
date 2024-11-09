@@ -7661,6 +7661,49 @@ static const char _data_FX_MODE_2DWAVINGCELL[] PROGMEM = "Waving Cell@!,,Amplitu
 
 #endif // WLED_DISABLE_2D
 
+uint16_t mode_onStatic(void) {
+  SEGMENT.fill_solid(SEGCOLOR(1));
+  uint32_t cycleTime = 1 + (255 - SEGMENT.speed);
+  uint32_t it = strip.now / cycleTime;
+  
+  uint16_t offset = SEGMENT.intensity;
+  for(uint16_t i = 0; i < SEGENV.aux0; i++) {
+      if(SEGENV.aux0 > offset) {
+        SEGMENT.setPixelColor(i-offset, SEGCOLOR(0));
+      }
+  }
+  
+  if (it != SEGENV.step) {
+    if(SEGENV.aux0 < SEGLEN + offset) {
+      SEGENV.aux0++;
+    }
+    SEGENV.step = it;
+  }
+  return FRAMETIME;
+}
+static const char _data_FX_MODE_ONSTATIC[] PROGMEM = "Static On@Speed,Offset,,,;FX,BG,C;!;ix=0";
+
+uint16_t mode_offStatic(void) {
+  uint32_t cycleTime = 1 + (255 - SEGMENT.speed);
+  uint32_t it = strip.now / cycleTime;
+  
+  uint16_t offset = SEGMENT.intensity;
+  for(uint16_t i = 0; i <= SEGENV.aux0; i++) {
+    if(SEGENV.aux0 > offset) {
+      SEGMENT.setPixelColor((SEGLEN-i)+offset, SEGCOLOR(1));
+    }
+  }
+  
+  if (it != SEGENV.step) {
+    if(SEGENV.aux0 < SEGLEN + offset) {
+      SEGENV.aux0++;
+    }
+    SEGENV.step = it;
+  }
+  return FRAMETIME;
+}
+static const char _data_FX_MODE_OFFSTATIC[] PROGMEM = "Static Off@Speed,Offset,,,;FX,BG,C;!;ix=0";
+
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // mode data
@@ -7899,5 +7942,7 @@ void WS2812FX::setupEffectData() {
 
   addEffect(FX_MODE_2DAKEMI, &mode_2DAkemi, _data_FX_MODE_2DAKEMI); // audio
 #endif // WLED_DISABLE_2D
+  addEffect(FX_MODE_ON_STATIC, &mode_onStatic, _data_FX_MODE_ONSTATIC);
+  addEffect(FX_MODE_OFF_STATIC, &mode_offStatic, _data_FX_MODE_OFFSTATIC);
 
 }
