@@ -7333,6 +7333,36 @@ uint16_t mode_waterfall(void) {                   // Waterfall. By: Andrew Tulin
 } // mode_waterfall()
 static const char _data_FX_MODE_WATERFALL[] PROGMEM = "Waterfall@!,Adjust color,Select bin,Volume (min);!,!;!;01f;c2=0,m12=2,si=0"; // Circles, Beatsin
 
+uint16_t mode_chasestopper(void) {
+    uint32_t cycleTime = 1 + ((255 - SEGMENT.speed) * (255 - SEGMENT.speed)) / 255;
+    uint32_t it = strip.now / cycleTime;
+    
+    if (it != SEGENV.step) {
+      if (SEGENV.aux0 < SEGLEN) {
+        SEGENV.aux0++;
+      }
+      SEGENV.step = it;
+    }
+
+    uint16_t pixelCount = min(SEGENV.aux0, SEGLEN);
+    
+    if (SEGMENT.check1) {
+      uint16_t startPos = SEGLEN - pixelCount;
+      for (uint16_t i = startPos; i < SEGLEN; i++) {
+        SEGMENT.setPixelColor(i, SEGCOLOR(1));
+      }
+    } else {
+      SEGMENT.fill_solid(SEGCOLOR(1));
+      for (uint16_t i = 0; i < pixelCount; i++) {
+        SEGMENT.setPixelColor(i, SEGCOLOR(0));
+      }
+    }
+    
+    return FRAMETIME;
+}
+static const char _data_FX_MODE_CHASESTOPPER[] PROGMEM = "Chase Stopper@!,,,,,Change Direction;!,!;;1;";
+
+
 
 #ifndef WLED_DISABLE_2D
 /////////////////////////
@@ -7951,6 +7981,7 @@ void WS2812FX::setupEffectData() {
   addEffect(FX_MODE_BLENDS, &mode_blends, _data_FX_MODE_BLENDS);
   addEffect(FX_MODE_TV_SIMULATOR, &mode_tv_simulator, _data_FX_MODE_TV_SIMULATOR);
   addEffect(FX_MODE_DYNAMIC_SMOOTH, &mode_dynamic_smooth, _data_FX_MODE_DYNAMIC_SMOOTH);
+  addEffect(FX_MODE_CHASESTOPPER, &mode_chasestopper, _data_FX_MODE_CHASESTOPPER);
 
   // --- 1D audio effects ---
   addEffect(FX_MODE_PIXELS, &mode_pixels, _data_FX_MODE_PIXELS);
