@@ -7334,9 +7334,15 @@ uint16_t mode_waterfall(void) {                   // Waterfall. By: Andrew Tulin
 static const char _data_FX_MODE_WATERFALL[] PROGMEM = "Waterfall@!,Adjust color,Select bin,Volume (min);!,!;!;01f;c2=0,m12=2,si=0"; // Circles, Beatsin
 
 uint16_t mode_chasestopper(void) {
+    // Reset counter when direction changes
+    if (SEGENV.aux1 != SEGMENT.check1) {
+      SEGENV.aux0 = 0;
+      SEGENV.aux1 = SEGMENT.check1;
+    }
+
     uint32_t cycleTime = 1 + ((255 - SEGMENT.speed) * (255 - SEGMENT.speed)) / 255;
     uint32_t it = strip.now / cycleTime;
-    
+
     if (it != SEGENV.step) {
       if (SEGENV.aux0 < SEGLEN) {
         SEGENV.aux0++;
